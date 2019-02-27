@@ -1,0 +1,195 @@
+openapi: 3.0.0
+
+servers:
+  - description: DCS4COP Development API
+    url: http://xcube.dcs4cop.eu/dcs4cop-dev/api/0.1.0.dev4
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/toniof/xcube-events/1.0.0
+
+info:
+  description: |
+    Service for monitoring and alerting about xarray data cube changes
+  version: "0.1.0.dev1"
+  title: XCube Events API
+  contact:
+    email: bcdev@brockmann-consult.de
+  license:
+    name: MIT
+    url: 'https://opensource.org/licenses/MIT'
+
+tags:
+  - name: users
+    description: Users API
+  - name: subscriptions
+    description: Subscriptions API
+
+paths:
+
+  ########################################################################################
+  # Users
+  ########################################################################################
+
+  '/user/add':
+    get:
+      tags:
+        - users
+      summary: Register new user
+      operationId: addUser
+      parameters:
+        - $ref: '#/components/parameters/mail'
+        - $ref: '#/components/parameters/notifyPush'
+        - $ref: '#/components/parameters/notifyMail'
+      description: |
+        Register a new user.
+        A description of the user is returned.
+      responses:
+        '200':
+          description: A description of the new user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  '/user/remove/{userID}':
+    get:
+      tags:
+        - users
+      summary: Remove user
+      operationId: removeUser
+      parameters:
+        - $ref: '#/components/parameters/userID'
+      description: |
+        Remove an existing user.
+      responses:
+        '200':
+          description: User removed
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  '/user/update/{userID}':
+    get:
+      tags:
+        - users
+      summary: Update existing user
+      operationId: updateUser
+      parameters:
+        - $ref: '#/components/parameters/userID'
+        - $ref: '#/components/parameters/mail'
+        - $ref: '#/components/parameters/notifyPush'
+        - $ref: '#/components/parameters/notifyMail'
+      description: |
+        Update an existing user.
+      responses:
+        '200':
+          description: A description of the updated user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  ########################################################################################
+  # Subscriptions
+  ########################################################################################
+  '/subscribe/{userID}/{event}':
+    get:
+      tags:
+        - subscriptions
+      summary: Subscribe to event
+      operationId: subscribe
+      parameters:
+        - $ref: '#/components/parameters/userID'
+        - $ref: '#/components/parameters/event'
+        - $ref: '#/components/parameters/places'
+      description: |
+        Subscribe a user to receive notifications in case the event has
+        occurred at the given places.
+      responses:
+        '200':
+          description: Subscribed
+
+  '/unsubscribe/{userID}/{event}':
+    get:
+      tags:
+        - subscriptions
+      summary: Unsubscribe from event
+      operationId: unsubscribe
+      parameters:
+        - $ref: '#/components/parameters/userID'
+        - $ref: '#/components/parameters/event'
+        - $ref: '#/components/parameters/places'
+      description: |
+        Cancel subscription of a user to receive notifications
+        for the given places.
+      responses:
+        '200':
+          description: Subscription cancelled
+          content:
+            text/plain:
+              schema:
+                type: string
+
+components:
+  parameters:
+    event:
+      name: event
+      in: path
+      description: Event name.
+      required: true
+      schema:
+        type: string
+    mail:
+      name: mail
+      in: query
+      description: Email address.
+      required: false
+      schema:
+        type: string
+    notifyMail:
+      name: notifyMail
+      in: query
+      description: Whether to notify via mail.
+      required: true
+      schema:
+        type: boolean
+    notifyPush:
+      name: notifyPush
+      in: query
+      description: Whether to notify via push to app.
+      required: true
+      schema:
+        type: boolean
+    places:
+      name: places
+      in: query
+      description: Place ids.
+      required: true
+      schema:
+        type: array
+        items:
+          type: string
+    userID:
+      name: userID
+      in: path
+      description: User ID.
+      required: true
+      schema:
+        type: string
+
+  schemas:
+    User:
+      type: object
+      required:
+        - userID
+        - notifyMail
+        - notifyPush
+      properties:
+        userID:
+          type: string
+        mail:
+          type: string
+        notifyMail:
+          type: boolean
+        notifyPush:
+          type: boolean
